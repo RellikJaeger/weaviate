@@ -115,6 +115,8 @@ func makeSharedPortHandlerFunc(grpcServer *grpc.GRPCServer, otherHandler http.Ha
 	})
 }
 
+
+
 func configureAPI(api *operations.WeaviateAPI) http.Handler {
 	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Minute)
@@ -398,9 +400,9 @@ func configureAPI(api *operations.WeaviateAPI) http.Handler {
 	}
 
 	// Start it later in server.go
-	// startGrpcServer(grpcServer, appState)
+	//startGrpcServer(grpcServer, appState)
 
-	return makeSharedPortHandlerFunc(grpcServer, setupGlobalMiddleware(api.Serve(setupMiddlewares)))
+	return makeSharedPortHandlerFunc( setupGlobalMiddleware(api.Serve(setupMiddlewares)), grpcServer, appState)
 }
 
 // TODO: Split up and don't write into global variables. Instead return an appState
