@@ -14,7 +14,6 @@
 package rest
 
 import (
-	"strings"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -167,6 +166,7 @@ func (s *Server) hasScheme(scheme string) bool {
 	return false
 }
 
+
 // Serve the api
 func (s *Server) Serve() (err error) {
 	if !s.hasListeners {
@@ -227,7 +227,18 @@ func (s *Server) Serve() (err error) {
 			httpServer.IdleTimeout = s.CleanupTimeout
 		}
 
-		httpServer.Handler = makeSharedPortHandlerFunc(s.grpcServer, s.handler)
+		h2s := &http2.Server{}
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.ProtoMajor == 2 && r.Header.Get("Content-Type") == "application/grpc" {
+				fmt.Println("grpc")
+				s.grpcServer.ServeHTTP(w, r)
+			} else {
+				fmt.Println("http")
+				s.handler.ServeHTTP(w, r)
+			}
+		})
+	
+		httpServer.Handler = h2c.NewHandler(handler, h2s)
 
 		configureServer(httpServer, "http", s.httpServerL.Addr().String())
 
@@ -323,6 +334,19 @@ func (s *Server) Serve() (err error) {
 			// this happens with a wrong custom TLS configurator
 			s.Fatalf("no certificate was configured for TLS")
 		}
+
+		h2s := &http2.Server{}
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.ProtoMajor == 2 && r.Header.Get("Content-Type") == "application/grpc" {
+				fmt.Println("grpc")
+				s.grpcServer.ServeHTTP(w, r)
+			} else {
+				fmt.Println("http")
+				s.handler.ServeHTTP(w, r)
+			}
+		})
+	
+		httpsServer.Handler = h2c.NewHandler(handler, h2s)
 
 		configureServer(httpsServer, "https", s.httpsServerL.Addr().String())
 
