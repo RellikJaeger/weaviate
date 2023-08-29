@@ -230,10 +230,8 @@ func (s *Server) Serve() (err error) {
 		h2s := &http2.Server{}
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.ProtoMajor == 2 && r.Header.Get("Content-Type") == "application/grpc" {
-				fmt.Println("grpc")
 				s.grpcServer.ServeHTTP(w, r)
 			} else {
-				fmt.Println("http")
 				s.handler.ServeHTTP(w, r)
 			}
 		})
