@@ -548,27 +548,3 @@ func signalNotify(interrupt chan<- os.Signal) {
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 }
 
-
-func startCombinedServer(httpServer *http.Server, grpcServer *grpc.GRPCServer, address string) {
-	h2s := &http2.Server{}
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.ProtoMajor == 2 && r.Header.Get("Content-Type") == "application/grpc" {
-			grpcServer.ServeHTTP(w, r)
-		} else {
-			httpServer.Handler.ServeHTTP(w, r)
-		}
-	})
-
-	httpServer.Handler = h2c.NewHandler(handler, h2s)
-
-	listen, err := net.Listen("tcp", address)
-	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
-	}
-
-	log.Printf("Serving gRPC and HTTP on %s", address)
-	if err := httpServer.Serve(listen); err != nil {
-		log.Fatalf("Failed to serve: %v", err)
-	}
-}
-
