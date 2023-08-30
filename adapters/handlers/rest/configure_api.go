@@ -115,9 +115,7 @@ func makeSharedPortHandlerFunc(grpcServer *grpc.GRPCServer, otherHandler http.Ha
 	})
 }
 
-
-
-func configureAPI(api *operations.WeaviateAPI) (http.Handler, *grpc.GRPCServer, *state.State)	 {
+func configureAPI(api *operations.WeaviateAPI) (http.Handler, *grpc.GRPCServer, *state.State) {
 	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Minute)
 	defer cancel()
@@ -400,7 +398,7 @@ func configureAPI(api *operations.WeaviateAPI) (http.Handler, *grpc.GRPCServer, 
 	}
 
 	// Start it later in server.go
-	//startGrpcServer(grpcServer, appState)
+	// startGrpcServer(grpcServer, appState)
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares)), grpcServer, appState
 }

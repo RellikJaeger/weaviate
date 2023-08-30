@@ -19,5 +19,3 @@ import (
 func createGrpcServer(state *state.State) *grpc.GRPCServer {
 	return grpc.CreateGRPCServer(state)
 }
-
-
